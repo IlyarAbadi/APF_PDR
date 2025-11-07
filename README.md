@@ -44,6 +44,7 @@ In the following example, the heading threshold for cross entropy is set to 1.8 
 
 # Calibration (optional)
 It is important to note that inclusion of a calibration is not required. A calibration can be removed by setting NO_CALIBRATION in the very begnning of the file. We highly recommend to use the calibration procedure an the code using the method in [https://github.com/IlyarAbadi/IMU_Calibration_WO_Turntable]. The output of the calibration shoud be a 4 by 4 matrix for each sensor, as shown below :
+
 $$
 \mathbf{K}_{\text{gyro}} =
 \begin{bmatrix}
