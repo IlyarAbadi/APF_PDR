@@ -17,7 +17,7 @@ The main path to outmost data folder is identified as.
   - /calibration/
     - gyros_calib.mat
     - accel_calib.mat
-- /navigation/
+  - /navigation/
 
 Calibration for the accelerometer and gyroscope are NOT REQUIRED. However we recommend performing a calibration for acceleroemeter data. The calibration files should be saved in native MATLAB format (`.mat`) for each triaxial gyroscope and accelerometer (the names of these files are expected to be `accel_calib.mat` and `gyros_calib.mat`). See calibration section for more information below.
 
