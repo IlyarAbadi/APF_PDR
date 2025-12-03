@@ -4,7 +4,7 @@
 %#ok<*GVMIS>
 
 close all;clear;set(0, 'DefaultFigureWindowStyle', 'docked');
-set(0, 'DefaultFigureVisible', 'off')
+set(0, 'DefaultFigureVisible', 'on')
 
 
 % Quick configuration of the code
@@ -102,6 +102,7 @@ particle_count      = 0;
 kalman_count        = 0;
 t_iteration_all     = 0;
 already_reduced     = 0;
+t_ce_all            = 0;
 
 global  Kl_first_trigger_step
 Kl_first_trigger_step = inf;
@@ -111,6 +112,7 @@ for i = 1 : size(IMU_all_calib,1) -1
     t_ellipse_fitting = 0;
     t_pf_update       = 0;
     t_pf_divergence   = 0;
+    t_ce = 0;
 
     %  1. fetch IMU_all_calib
     c_IMU  = IMU_all_calib(i,:);
@@ -145,7 +147,9 @@ for i = 1 : size(IMU_all_calib,1) -1
 
 
         % 5.3 check Cross entropy
+        tic;
         [pf_reduction_flag,CE] = PDR_PF_2D_CE_test(param_init,r_state,r_weight);
+        t_ce=toc;
 
         % 5.4 state renaming
         c_state    = r_state;
@@ -191,7 +195,7 @@ for i = 1 : size(IMU_all_calib,1) -1
     % add iteration time
     t_iteration     = t_pf_predict + t_pf_update + t_pf_divergence;
     t_iteration_all = t_iteration_all + t_iteration;
-
+    t_ce_all = t_ce_all + t_ce;
 end
 
 %==========================================================================
@@ -243,7 +247,7 @@ init_02_IMU_filename        ={'sensor_logger','TotalAcceleration.csv','Gyroscope
 init_01_IMU_folder           = outmost_folder + "\navigation\";  % path to data
 init_03_calibration_folder   = outmost_folder + "\calibration\"; % path to calibration files
 init_04_calibration_filename = {'accel_calib.mat','gyros_calib.mat'}; % accel mat(4 by 4), gyro mat(4 by 4)
-init_05_map_information      ={'C:\__Codes\MPK_PDR\DXF_2_CSV/exported_lines_doorclosed',4.3197,0.01}; % folder path, map scale , grid_resolution
+init_05_map_information      ={'../../DXF_2_CSV/exported_lines_doorclosed',4.3197,0.01}; % folder path, map scale , grid_resolution
 
 % type of filtering, and parameters
 init_06_frequnecy_filtering ={'',''};
@@ -974,12 +978,12 @@ for i=1:length(c_weights)
 
 end
 
-% %=================================================
-% % --------------------- Plots---------------------
-% %=================================================
-% x_zoom = [-5,5];
-% y_zoom = [-5,5];
-% 
+%=================================================
+% --------------------- Plots---------------------
+%=================================================
+x_zoom = [-5,5];
+y_zoom = [-5,5];
+
 % figure; 
 % axes_handle = axes();
 % hold on;
@@ -990,7 +994,7 @@ end
 % h3= plot(all_intersections(:,1), all_intersections(:,2), 'ko', 'MarkerSize', 6, 'MarkerFaceColor', 'g');
 % axes_handle.GridLineWidth = 1;
 % axes_handle.GridAlpha = 0.3;
-% axes_handle.FontSize= 15;
+% axes_handle.FontSize= 18;
 % axes_handle.FontWeight = 'bold';
 % axes_handle.MinorGridLineWidth = 0.5;
 % axes_handle.FontName= 'Times';
@@ -1003,7 +1007,7 @@ end
 % legend([h1(1),h2(1),h3(1)], {'map lines','user motion','intersections'});
 % 
 % % zoomed plot
-% axes_zoomed_handle = axes('Position', [0.55 0.3 0.25 0.25]); % adjust as needed
+% axes_zoomed_handle = axes('Position', [0.58 0.3 0.25 0.25]); % adjust as needed
 % box on; % draw box around inset
 % line([map_lines(:, 1), map_lines(:, 3)]', [map_lines(:, 2), map_lines(:, 4)]','color','blue','LineWidth', 1.5,'DisplayName','map lines');
 % hold on
@@ -1013,7 +1017,7 @@ end
 % plot(all_intersections(:,1), all_intersections(:,2), 'ko', 'MarkerSize', 6, 'MarkerFaceColor', 'g');
 % axes_zoomed_handle.GridLineWidth = 1;
 % axes_zoomed_handle.GridAlpha = 0.3;
-% axes_zoomed_handle.FontSize= 15;
+% axes_zoomed_handle.FontSize= 18;
 % axes_zoomed_handle.FontWeight = 'bold';
 % axes_zoomed_handle.MinorGridLineWidth = 0.5;
 % axes_zoomed_handle.FontName= 'Times';
@@ -1024,6 +1028,7 @@ end
 % grid on; grid minor;axis equal;
 % title('zoomed')
 % hold off
+% exportgraphics(gcf,"C:\Users\ilyar\Desktop\ISPRS_GeoInformation\Fig2_MDPIISPRS_userpathintersection.pdf","ContentType",'Vector')
 
 % update the weights(1)
 update_weight = ones(1,length(c_weights));
@@ -1219,23 +1224,23 @@ grid on; grid minor;
 xlabel('step count')
 ylabel("Cross Entropy")
 
-% Capture the current figure as an image
-frame = getframe(gcf);
-img = frame2im(frame);
-% img = imresize(img, [1080 1920]);
-img = imresize(img, [1080/2 1920/2]);
-[A, map] = rgb2ind(img, 256);
-
-
-% Write to GIF file
-try
-    imwrite(A, map, gif_filename, 'gif', 'WriteMode', 'append', 'DelayTime', 0.25);
-catch
-    % Get current date and time
-    t = datetime('now', 'Format', 'yyyyMMdd_HHmmss');
-    timeStr = char(t);
-    gif_filename = strjoin([timeStr,"_",string(config),'.gif'],"");
-    imwrite(A, map, gif_filename, 'gif', 'LoopCount', Inf, 'DelayTime', 0.25);
-end
+% % Capture the current figure as an image
+% frame = getframe(gcf);
+% img = frame2im(frame);
+% % img = imresize(img, [1080 1920]);
+% img = imresize(img, [1080/2 1920/2]);
+% [A, map] = rgb2ind(img, 256);
+% 
+% 
+% % Write to GIF file
+% try
+%     imwrite(A, map, gif_filename, 'gif', 'WriteMode', 'append', 'DelayTime', 0.25);
+% catch
+%     % Get current date and time
+%     t = datetime('now', 'Format', 'yyyyMMdd_HHmmss');
+%     timeStr = char(t);
+%     gif_filename = strjoin([timeStr,"_",string(config),'.gif'],"");
+%     imwrite(A, map, gif_filename, 'gif', 'LoopCount', Inf, 'DelayTime', 0.25);
+% end
 
 end

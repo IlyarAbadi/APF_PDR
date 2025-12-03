@@ -105,11 +105,7 @@ TODO: In current implementation, particle reduction is triggered once. More robu
 
 
 # Example
-
 ![Alt text](/Matlab/APF_PDR/20251106_205017_Mode_reduced_ParNumInit6000_GyroBias0.03_StepLengthNoise0.4ParReduced1000.gif)
-
-
-
 
 # License
 APF_PDR is released under BSD-3 License.
