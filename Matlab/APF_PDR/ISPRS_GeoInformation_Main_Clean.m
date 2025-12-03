@@ -241,7 +241,7 @@ function param_init = PDR_PF_2D_param_initialization()
 % outmost_folder = "C:\__Data\ISPRS_GeoInformation_PDR_EKF\Samsung_A16_Ilyar_2025_07_22_23_24_44"; 
 % init_02_IMU_filename        ={'samsung_A16','TotalAcceleration.csv','Gyroscope.csv',[1,15900]};
 
-outmost_folder = "C:\__Data\ISPRS_GeoInformation_PDR_EKF\Samsung_A16_Ilyar_2025_07_22_01_41_49"; 
+outmost_folder = ".\sample_data\Samsung_A16_Ilyar_2025_07_22_01_41_49"; 
 init_02_IMU_filename        ={'sensor_logger','TotalAcceleration.csv','Gyroscope.csv',[2,15000]};
 
 init_01_IMU_folder           = outmost_folder + "\navigation\";  % path to data
