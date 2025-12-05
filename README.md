@@ -1,11 +1,10 @@
 #  Map-aided Adaptive Particle Filter with a Reduced State Space
 
-This is a map-based adaptive particle filtering pedestrian dead reckoning (PD-PDR) using IMU sensors. The repository contains the official implementation of,
+This is a map-based adaptive particle filtering pedestrian dead reckoning (PF-PDR) using IMU sensors. The repository contains the official implementation of,
 
 A Novel Smartphone PDR Framework Based on Map-Aided Adaptive Particle Filter with a Reduced State Space  
 **Mengchi Ai, Ilyar Asl Sabbaghian Hokmabadi, Xuan Zhao**  
 *ISPRS International Journal of Geo-Information*, 2025, 14(12), 476  
-https://doi.org/10.3390/ijgi14120476  
 [[Journal Link]](https://www.mdpi.com/2220-9964/14/12/476)
 
 # How to run the code
@@ -73,7 +72,7 @@ Although particle filter is a robust estimator, it will suffer from uncalibrated
 It is recommend to have 1 second pause in the beginning (user remains stationary). The one second pause is utilized to approximate the axis that corresponds to the vertical direction. The user needs to mention the last epoch (before pause). Exact end time of the static pause is NOT REQUIRED. If the user provided 1 second pause and the data rate is 100, then the first number in `init_02_IMU_filename` should be set to 100 (the second number is the index of the final epoch).
 
 # Step length estimation
-Step length estimation is important in any PDR. In this code, step length is estimated by detecting the acceleration peaks and the vallies in the vertical direction (parallel to floor). In the `PDR_PF_2D_step_detect` function the accelerometer readings are projected onto the vertical direction. We assume that floor is flat and if the smartphone is placed on the floor, there will be an alignment of the floor plane and one of the axes of the acceleroemter (Excat alignment is NOT REQUIRED, as the estimated length of the step will be corrected through particle filter). With these assumptions accelerometer measurement are projected onto the vertical direction. and the minimum and the maximum values in this direction are detected. Detecting maximum and minimum require identifying a window `window_size`. This variable is local to `PDR_PF_2D_step_detect` and is set AUTOMATICALLY. The value of this window size can be changed if you receive a [WARNING] that "Number of peaks and vallies are different" in MATLAB promopt. Typically, if the peaks and vallies are different up to 10-14 steps, the algorithm runs without issues, but if this difference increases, it can cause failures. 
+Step length estimation is important in any PDR. In this code, step length is estimated by detecting the acceleration peaks and the vallies in the vertical direction (parallel to floor). In the `PDR_PF_2D_step_detect` function the accelerometer readings are projected onto the vertical direction. We assume that floor is flat and if the smartphone is placed on the floor, there will be an alignment of the floor plane and one of the axes of the acceleroemter (Excat alignment is NOT REQUIRED, as the estimated length of the step will be corrected through particle filter). With these assumptions accelerometer measurement are projected onto the vertical direction. and the minimum and the maximum values in this direction are detected. Detecting maximum and minimum require identifying a window `window_size`. This variable is local to `PDR_PF_2D_step_detect` and is set AUTOMATICALLY. The value of this window size can be changed if you receive a warning that "Number of peaks and vallies are different" in MATLAB promopt. Typically, if the peaks and vallies are different up to 10-14 steps, the algorithm runs without issues, but if this difference increases, it can cause failures. 
 
 The detected epochs of the maximum and the minimum accelerometer values and accelerometer values themselves are passed to `PDR_PF_2D_estimate_length`, where we utilized Weinberg's step length estimation formula. This formula requires setting a constant value (k = 0.4).This value is only approximate and user depedent. Exact values for this parameter is NOT REQUIRED as particle filter through map-updates can handle errors.
 
@@ -86,10 +85,9 @@ Following this step, `PDR_PF_2D_gen_occupy` uses imported map-lines and places t
 
 The discrete map is utilized to spawn possible set of user position in `PDR_PF_2D_init_occupy`. If the user is interested in selecting particles in a specific region of the map, they can do so by setting `lim_x_lower`, `lim_x_upper`, `lim_y_lower`, and `lim_y_upper` values. Otherwise, these values can be set to `inf` and `-inf`. Based on the desired number of particles `par_num_pos`, the function will select particles at regular spaces matching closest to this number. Finally, the grid coordinates are transformed to original map-scale values matching the real-dimensions of the CAD model in this function (thus `m_par` is the world scale).
 
-It is important to note that sampling the user's heading will multiply `par_num_pos`. So the heading sampling step set in  `init_08_sampling_size` (second cell,first parameter) will be multiplied to `par_num_pos`. If user requires the same number of particles as `init_08_sampling_size`, then an approximate heading (second cell, second parameter) should be provided. Further, initial heading spread range should include this heading. Exact knowledge of heading is NOT REQUIRED and approximate values up to 5 degrees should work. If user's is not sure about the heading in this range, then heading multiplier should utilized and heading range should be expanded.
+It is important to note that sampling the user's heading will multiply `par_num_pos`. So the heading sampling range is set in `init_08_sampling_size`(second cell). `par_num_pos` will increase by a factor equal to the total number of headings in this range. If user requires the same number of particles as `init_08_sampling_size`, then an approximate heading should be provided. This can be done by setting the initial heading spread to only include the heading. Exact knowledge of heading is NOT REQUIRED and approximate values up to 5 degrees should work. If user is not sure about the heading, then the heading range should be expanded.
 
-# Adaptive Particle filtering
-
+# Adaptive particle filtering
 Particle filtering follows[[Journal Link]](https://www.mdpi.com/2220-9964/14/12/476) which this work is based on. The proposed particle filtering is map-aided, where particles are propogated forward with the help of IMU measurements.
 
 While accelerometer measurements are used to estimate the step-length, gyroscope measurements are uitlized to estimate the yaw angle. The following are the distinction between the proposed particle filter and other particle filters:
@@ -99,12 +97,11 @@ While accelerometer measurements are used to estimate the step-length, gyroscope
 
 Particle prediction is achieved in `particle_filter_predict`.
 
-The developed algorithm utilizes the map to update the particles. Two types of map updates are included. The main and important map-update checks to see if a particle moves throughout walls defined the 2D plan of the building. Particle updates can be found in `particle_filter_update1` and `particle_filter_update1`. It is important to note that such particle update will only occur if the user takes a step.
+The developed algorithm utilizes the map to update the particles. Two types of map updates are included. The main and important map-update checks to see if a particle moves throughout walls defined the 2D plan of the building. Particle updates can be found in `particle_filter_update1` and `particle_filter_update2`. It is important to note that such particle update will only occur if the user takes a step.
 
 After every particle filter update, the developed method utilizes cross entropy distance of particle filter spread and a Gaussian distribution. If this distance is smaller than a certain value, the it means particles are convering and particle numbers can be reduced. Cross entropy test is performed in `PDR_PF_2D_CE_test`. The parameter to tune in this function includes mainly the covariance of the target distribution which is defined with local (to function) parameter `gaussian_cov`. The minimum distance acceptable from this distribution is set using `CE_posisti_threshold` and `CE_heading_threshold`. 
 
 TODO: In current implementation, particle reduction is triggered once. More robust methods can increase the number of the particles if cross entropy distance falls outside of a certain range. 
-
 
 # Example
 ![Alt text](/Matlab/APF_PDR/20251106_205017_Mode_reduced_ParNumInit6000_GyroBias0.03_StepLengthNoise0.4ParReduced1000.gif)
