@@ -15,12 +15,18 @@ In order to run the code the paths in `PDR_PF_2D_param_initialization()` should 
 
 # Folder Structure
  The user is accepeted to have the following data folder structure. 
+- DXF_2_CSV
+  exported_lines_olderanddooropen.csv <- sample map coordinates x1, y1, x2, y2
+- /MATLAB/APF_PDR
+  - /sample_data/Samsung_A16_Ilyar_2025_07_22_01_41_49/
+    - /calibration/
+      - gyros_calib.mat
+      - accel_calib.mat
+    - /navigation/
 
-- /outmost_folder
-  - /calibration/
-    - gyros_calib.mat
-    - accel_calib.mat
-  - /navigation/
+The repository includes a sample map. Map is saved in CSV file inside DXF_2_CSV. The rows in this text file correspond to a line segment in the map (x1,y1,x2,y2). This map is not in the correct scale, bowever, the provide code will apply the correct scale to it. More information about the scaling of the map is provided in this README.md file. 
+
+A sample data collected on Samsung A16 using Sensor Logger is also provided inside MATLAB/APF_PDR/sample_data/Samsung_A16_Ilyar_2025_07_22_01_41_49/navigation/. The calibration file is provided in MATLAB/APF_PDR/sample_data/Samsung_A16_Ilyar_2025_07_22_01_41_49/calibration/.
 
 Calibration for the accelerometer and gyroscope are NOT REQUIRED. However it is recommend performing a calibration for acceleroemeter data. The calibration files should be saved in native MATLAB format (`.mat`) for each triaxial gyroscope and accelerometer (the names of these files are expected to be `accel_calib.mat` and `gyros_calib.mat`). See calibration section for more information below.
 
